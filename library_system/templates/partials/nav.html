@@ -1,0 +1,22 @@
+<!-- for templates folder partials/nav.html -->
+
+
+
+
+
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <a class="navbar-brand" href="{% url 'dashboard:home' %}">Attendance System</a>
+  <div class="collapse navbar-collapse">
+    <ul class="navbar-nav mr-auto">
+      {% if user.is_authenticated %}
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'login_signup' %}">Logout</a>
+        </li>
+      {% else %}
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'login_signup' %}">Login/Signup</a>
+        </li>
+      {% endif %}
+    </ul>
+  </div>
+</nav>

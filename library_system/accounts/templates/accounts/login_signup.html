@@ -1,0 +1,966 @@
+<!-- for accounts app templates/accounts/login_signup.html -->
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance System - Login & Sign-Up</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #FFFFFF;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 480px;
+            padding: 15px;
+            box-sizing: border-box;
+        }
+
+        .form-card {
+            background-color: #FFFFFF;
+            border: 1px solid #E6E6FA;
+            border-radius: 8px;
+            padding: 10px 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #8A2BE2;
+            text-align: center;
+            margin-bottom: 5px;
+        }
+
+        p {
+            text-align: center;
+            color: #666;
+            margin-top: 5px;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+        }
+
+        .subhead {
+            font-size: 0.85em;
+            margin-bottom: 5px;
+        }
+
+        .main-tabs {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 10px;
+            margin-bottom: 15px;
+        }
+
+        .main-tab-btn {
+            background-color: #E6E6FA;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s, color 0.3s;
+            flex: 1;
+            margin: 0 5px;
+            white-space: nowrap;
+            font-size: 0.95em;
+        }
+
+        .main-tab-btn:not(.active):hover {
+            background-color: #d1c4e9;
+        }
+
+        .main-tab-btn.active {
+            background-color: #8A2BE2;
+            color: white;
+        }
+
+        .role-selection {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            margin: 10px 0;
+        }
+
+        .role-btn {
+            background-color: #E6E6FA;
+            border: none;
+            width: 48%;
+            margin-bottom: 5px;
+            padding: 8px 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s, box-shadow 0.3s;
+            box-sizing: border-box;
+            font-size: 0.9em;
+        }
+
+        .role-btn:not(.active):hover {
+            background-color: #ddd;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .role-btn.active {
+            background-color: #8A2BE2;
+            color: white;
+        }
+
+        .role-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            margin: 10px 0;
+        }
+
+        .tab-btn {
+            background-color: #E6E6FA;
+            border: none;
+            width: 48%;
+            margin-bottom: 5px;
+            padding: 8px 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s, box-shadow 0.3s;
+            box-sizing: border-box;
+            font-size: 0.9em;
+        }
+
+        .tab-btn:not(.active):hover {
+            background-color: #ddd;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .tab-btn.active {
+            background-color: #8A2BE2;
+            color: white;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            margin-top: 15px;
+        }
+
+        label {
+            margin-top: 8px;
+            font-weight: bold;
+            color: #8A2BE2;
+            font-size: 0.95em;
+        }
+
+        .input-group {
+            position: relative;
+            margin-top: 3px;
+            margin-bottom: 0;
+        }
+
+        .input-group input {
+            margin-top: 0;
+            width: 100%;
+            padding-right: 35px;
+        }
+
+        input {
+            padding: 6px;
+            margin-top: 3px;
+            border: 1px solid #E6E6FA;
+            border-radius: 5px;
+            font-size: 0.95em;
+            box-sizing: border-box;
+            transform: scale(1);
+            transition: border-color 0.3s, box-shadow 0.3s, transform 0.15s ease-in-out;
+        }
+
+        input:hover {
+            transform: scale(1.005);
+        }
+
+        input:focus {
+            border-color: #8A2BE2;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(138, 43, 226, 0.3);
+            transform: scale(1.01);
+        }
+
+        .toggle-password {
+            position: absolute;
+            top: 50%;
+            right: 8px;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #8A2BE2;
+            font-size: 0.9em;
+            transition: color 0.2s;
+            z-index: 10;
+        }
+
+        .toggle-password:hover {
+            color: #5d2b96;
+        }
+
+        .btn {
+            margin-top: 10px;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background-color 0.3s, opacity 0.3s;
+        }
+
+        .btn.primary {
+            background-color: #8A2BE2;
+            color: white;
+        }
+
+        .btn.primary:hover {
+            background-color: #7937b8;
+        }
+
+        .btn.secondary {
+            background-color: #E6E6FA;
+            color: #8A2BE2;
+        }
+
+        .btn.secondary:hover {
+            background-color: #d1c4e9;
+        }
+
+        .btn.primary.loading::after {
+            content: ' ⏳';
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .link {
+            display: block;
+            text-align: center;
+            margin-top: 8px;
+            color: #8A2BE2;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .link:hover {
+            color: #5d2b96;
+            text-decoration: underline;
+        }
+
+        .message {
+            margin-top: 10px;
+            padding: 8px;
+            border-radius: 5px;
+            text-align: center;
+            opacity: 1;
+            transition: opacity 0.5s ease-out;
+        }
+
+        .message.fade-out {
+            opacity: 0;
+        }
+
+        .message.success {
+            background-color: #e6ffe6;
+            color: #008000;
+            border: 1px solid #008000;
+        }
+
+        .message.error {
+            background-color: #ffe6e6;
+            color: #cc0000;
+            border: 1px solid #cc0000;
+        }
+
+        .message.info {
+            background-color: #e6f3ff;
+            color: #0066cc;
+            border: 1px solid #0066cc;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .footer-note {
+            font-size: 0.75em;
+            text-align: center;
+            margin-top: 5px;
+        }
+
+        @media (max-width: 500px) {
+            .container {
+                max-width: 100%;
+                padding: 10px;
+            }
+            .form-card {
+                padding: 10px 15px;
+            }
+            .role-btn, .tab-btn {
+                width: 100%;
+                margin: 5px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="form-card">
+            <div class="main-tabs">
+                <button id="login-tab" class="main-tab-btn active"><i class="fa-solid fa-right-to-bracket"></i> Login</button>
+                <button id="signup-tab" class="main-tab-btn"><i class="fa-solid fa-user-plus"></i> Sign-Up</button>
+            </div>
+
+            <!-- LOGIN SECTION -->
+            <div id="login-section">
+                <h1>Welcome Back!</h1>
+                <p>Log in to your account to continue.</p>
+                <p class="subhead">Select your role to access your dashboard.</p>
+
+                <div class="role-selection">
+                    <button id="teacher-role" class="role-btn active"><i class="fa-solid fa-chalkboard-user"></i> I’m a Teacher</button>
+                    <button id="student-role" class="role-btn"><i class="fa-solid fa-graduation-cap"></i> I’m a Student</button>
+                </div>
+
+                <form id="login-form" method="post" action="">
+                    {% csrf_token %}
+                    <input type="hidden" name="login-form" value="1">
+                    <label for="email-id">Email / ID Number:</label>
+                    <input type="text" id="email-id" name="email_or_id" placeholder="Enter your registered email or ID" required>
+
+                    <label for="password">Password:</label>
+                    <div class="input-group">
+                        <input type="password" id="password" name="password" placeholder="Enter your password" required>
+                        <i class="fa-solid fa-eye toggle-password" data-target="password"></i>
+                    </div>
+
+                    <button type="submit" class="btn primary"><i class="fa-solid fa-sign-in-alt"></i> Login</button>
+                    <a href="#" id="forgot-password-link" class="link">Forgot Password?</a>
+                </form>
+
+                <div id="login-message" class="message hidden"></div>
+            </div>
+
+            <!-- SIGN-UP SECTION -->
+            <div id="signup-section" class="hidden">
+                <h1>Create Your Account</h1>
+                <p>Join the attendance system and access your dashboard.</p>
+
+                <div class="role-tabs">
+                    <button id="teacher-tab" class="tab-btn active"><i class="fa-solid fa-chalkboard-user"></i> Teacher Registration</button>
+                    <button id="student-tab" class="tab-btn"><i class="fa-solid fa-graduation-cap"></i> Student Registration</button>
+                </div>
+
+                <form id="signup-form" class="teacher-form">
+                    <label for="full-name-teacher">Full Name</label>
+                    <input type="text" id="full-name-teacher" name="username" required>
+
+                    <label for="email-teacher">Email Address</label>
+                    <input type="email" id="email-teacher" name="email" required>
+
+                    <label for="employee-id">Employee ID</label>
+                    <input type="text" id="employee-id" name="employee_id" required>
+
+                    <label for="education-level-teacher">Education Level</label>
+                    <select id="education-level-teacher" name="education_level" required>
+                        <option value="high_school">High School</option>
+                        <option value="senior_high">Senior High</option>
+                        <option value="university_college">University/College</option>
+                    </select>
+
+                    <div id="department-teacher-container" class="input-group">
+                        <label for="department-teacher">Department</label>
+                        <input type="text" id="department-teacher" name="department" required>
+                    </div>
+
+                    <label for="password-teacher">Password</label>
+                    <div class="input-group">
+                        <input type="password" id="password-teacher" name="password1" required>
+                        <i class="fa-solid fa-eye toggle-password" data-target="password-teacher"></i>
+                    </div>
+
+                    <label for="confirm-password-teacher">Confirm Password</label>
+                    <div class="input-group">
+                        <input type="password" id="confirm-password-teacher" name="password2" required>
+                        <i class="fa-solid fa-eye toggle-password" data-target="confirm-password-teacher"></i>
+                    </div>
+
+                    <input type="hidden" name="signup-form" value="1">
+                    <input type="hidden" name="role" value="teacher">
+                    <button type="submit" class="btn primary"><i class="fa-solid fa-arrow-right"></i> Create Teacher Account</button>
+                </form>
+
+                <form id="signup-form-student" class="student-form hidden">
+                    <label for="full-name-student">Full Name</label>
+                    <input type="text" id="full-name-student" name="username" required>
+
+                    <label for="student-id">Student ID Number</label>
+                    <input type="text" id="student-id" name="student_id" required>
+
+                    <label for="education-level-student">Education Level</label>
+                    <select id="education-level-student" name="education_level" required>
+                        <option value="high_school">High School</option>
+                        <option value="senior_high">Senior High</option>
+                        <option value="university_college">University/College</option>
+                    </select>
+
+                    <div id="department-student-container" class="input-group">
+                        <label for="department-student">Department</label>
+                        <input type="text" id="department-student" name="department" required>
+                    </div>
+
+                    <label for="email-student">Email Address</label>
+                    <input type="email" id="email-student" name="email" required>
+
+                    <label for="password-student">Password</label>
+                    <div class="input-group">
+                        <input type="password" id="password-student" name="password1" required>
+                        <i class="fa-solid fa-eye toggle-password" data-target="password-student"></i>
+                    </div>
+
+                    <label for="confirm-password-student">Confirm Password</label>
+                    <div class="input-group">
+                        <input type="password" id="confirm-password-student" name="password2" required>
+                        <i class="fa-solid fa-eye toggle-password" data-target="confirm-password-student"></i>
+                    </div>
+
+                    <input type="hidden" name="signup-form-student" value="1">
+                    <input type="hidden" name="role" value="student">
+                    <button type="submit" class="btn primary"><i class="fa-solid fa-arrow-right"></i> Create Student Account</button>
+                </form>
+
+                <div id="signup-message" class="message hidden"></div>
+
+                <p class="footer-note">By signing up, you agree to our <a href="#">Terms of Use</a> and <a href="#">Privacy Policy</a>.</p>
+            </div>
+
+            <!-- FORGOT PASSWORD SECTION -->
+            <div id="forgot-section" class="hidden">
+                <h1>Password Recovery</h1>
+                <p id="forgot-header-text">Step 1: Enter your registered email.</p>
+
+                <form id="verify-form" method="post" action="">
+                    {% csrf_token %}
+                    <input type="hidden" name="verify-form" value="1">
+                    <label for="verify-email">Email Address:</label>
+                    <input type="email" id="verify-email" name="verify-email" placeholder="Enter your registered email" required>
+                    <button type="submit" class="btn primary">Send Verification Code</button>
+                </form>
+
+                <form id="code-verification-form" method="post" action="" class="hidden">
+                    {% csrf_token %}
+                    <input type="hidden" name="code-verification-form" value="1">
+                    <p class="subhead">A 6-digit code was sent to the email address provided. Please check your inbox and spam/junk folder.</p>
+                    <label for="verification-code">Verification Code:</label>
+                    <input type="text" id="verification-code" name="verification-code" placeholder="Enter 6-digit code" maxlength="6" required>
+                    <button type="submit" class="btn primary">Verify Code</button>
+                    <button type="button" id="resend-code-btn" class="btn secondary">Resend Code</button>
+                </form>
+
+                <form id="reset-password-form" method="post" action="" class="hidden">
+                    {% csrf_token %}
+                    <input type="hidden" name="reset-password-form" value="1">
+                    <label for="new-password">New Password</label>
+                    <div class="input-group">
+                        <input type="password" id="new-password" name="new-password" required>
+                        <i class="fa-solid fa-eye toggle-password" data-target="new-password"></i>
+                    </div>
+
+                    <label for="confirm-new-password">Confirm New Password</label>
+                    <div class="input-group">
+                        <input type="password" id="confirm-new-password" name="confirm-new-password" required>
+                        <i class="fa-solid fa-eye toggle-password" data-target="confirm-new-password"></i>
+                    </div>
+
+                    <button type="submit" class="btn primary">Reset Password</button>
+                </form>
+
+                <div id="forgot-message" class="message hidden"></div>
+                <button type="button" id="back-to-login" class="btn secondary"><i class="fa-solid fa-arrow-left"></i> Back to Login</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let verifiedEmail = '{{ request.session.verified_email|default:"" }}';
+
+        function switchSection(activeTabId, activeSectionId) {
+            const tabs = ['login-tab', 'signup-tab'];
+            const sections = ['login-section', 'signup-section', 'forgot-section'];
+
+            tabs.forEach(tabId => {
+                const tab = document.getElementById(tabId);
+                if (tab) tab.classList.toggle('active', tabId === activeTabId);
+            });
+
+            sections.forEach(sectionId => {
+                document.getElementById(sectionId).classList.toggle('hidden', sectionId !== activeSectionId);
+            });
+
+            if (activeSectionId !== 'forgot-section') {
+                document.getElementById('forgot-header-text').textContent = 'Step 1: Enter your registered email.';
+                document.getElementById('verify-form').classList.remove('hidden');
+                document.getElementById('code-verification-form').classList.add('hidden');
+                document.getElementById('reset-password-form').classList.add('hidden');
+
+                document.getElementById('verify-email').value = '';
+                document.getElementById('verification-code').value = '';
+                document.getElementById('new-password').value = '';
+                document.getElementById('confirm-new-password').value = '';
+
+                const forgotMessage = document.getElementById('forgot-message');
+                forgotMessage.classList.add('hidden');
+                forgotMessage.textContent = '';
+            }
+            document.getElementById('login-message').classList.add('hidden');
+            document.getElementById('signup-message').classList.add('hidden');
+        }
+
+        function togglePasswordVisibility(icon) {
+            const targetId = icon.getAttribute('data-target');
+            const targetInput = document.getElementById(targetId);
+
+            if (targetInput.type === 'password') {
+                targetInput.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                targetInput.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+
+        function showMessageWithFade(messageElement) {
+            if (messageElement && !messageElement.classList.contains('hidden')) {
+                setTimeout(() => {
+                    messageElement.classList.add('fade-out');
+                    setTimeout(() => {
+                        messageElement.classList.add('hidden');
+                        messageElement.classList.remove('fade-out');
+                        messageElement.textContent = '';
+                    }, 500);
+                }, 3000);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const activeSection = '{{ active_section|default:"login-section" }}';
+            const step = parseInt('{{ step|default:"1" }}', 10) || 1;
+            if (activeSection === 'forgot-section') {
+                switchSection('login-tab', 'forgot-section');
+                if (step === 2) {
+                    document.getElementById('verify-form').classList.add('hidden');
+                    document.getElementById('code-verification-form').classList.remove('hidden');
+                } else if (step === 3) {
+                    document.getElementById('verify-form').classList.add('hidden');
+                    document.getElementById('code-verification-form').classList.add('hidden');
+                    document.getElementById('reset-password-form').classList.remove('hidden');
+                }
+            } else {
+                switchSection('login-tab', activeSection === 'signup-section' ? 'signup-section' : 'login-section');
+            }
+
+            const toggleDepartmentVisibility = (selectElement, containerId) => {
+                const container = document.getElementById(containerId);
+                const isUniversity = selectElement.value === 'university_college';
+                container.style.display = isUniversity ? 'block' : 'none';
+                const input = container.querySelector('input');
+                input.required = isUniversity;
+            };
+
+            const educationLevelTeacher = document.getElementById('education-level-teacher');
+            const educationLevelStudent = document.getElementById('education-level-student');
+            if (educationLevelTeacher) {
+                toggleDepartmentVisibility(educationLevelTeacher, 'department-teacher-container');
+                educationLevelTeacher.addEventListener('change', () => toggleDepartmentVisibility(educationLevelTeacher, 'department-teacher-container'));
+            }
+            if (educationLevelStudent) {
+                toggleDepartmentVisibility(educationLevelStudent, 'department-student-container');
+                educationLevelStudent.addEventListener('change', () => toggleDepartmentVisibility(educationLevelStudent, 'department-student-container'));
+            }
+
+            document.querySelectorAll('.toggle-password').forEach(icon => {
+                icon.addEventListener('click', () => togglePasswordVisibility(icon));
+            });
+
+            ['login-message', 'signup-message', 'forgot-message'].forEach(id => {
+                showMessageWithFade(document.getElementById(id));
+            });
+        });
+
+        document.getElementById('login-tab').addEventListener('click', () => switchSection('login-tab', 'login-section'));
+        document.getElementById('signup-tab').addEventListener('click', () => switchSection('signup-tab', 'signup-section'));
+
+        document.getElementById('forgot-password-link').addEventListener('click', function(e) {
+            e.preventDefault();
+            switchSection('login-tab', 'forgot-section');
+        });
+
+        document.getElementById('back-to-login').addEventListener('click', () => switchSection('login-tab', 'login-section'));
+
+        document.getElementById('teacher-role').addEventListener('click', function() {
+            this.classList.add('active');
+            document.getElementById('student-role').classList.remove('active');
+        });
+
+        document.getElementById('student-role').addEventListener('click', function() {
+            this.classList.add('active');
+            document.getElementById('teacher-role').classList.remove('active');
+        });
+
+        document.getElementById('teacher-tab').addEventListener('click', function() {
+            this.classList.add('active');
+            document.getElementById('student-tab').classList.remove('active');
+            document.getElementById('signup-form').classList.remove('hidden');
+            document.getElementById('signup-form-student').classList.add('hidden');
+        });
+
+        document.getElementById('student-tab').addEventListener('click', function() {
+            this.classList.add('active');
+            document.getElementById('teacher-tab').classList.remove('active');
+            document.getElementById('signup-form-student').classList.remove('hidden');
+            document.getElementById('signup-form').classList.add('hidden');
+        });
+
+        document.getElementById('login-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const submitBtn = this.querySelector('button[type="submit"]');
+            submitBtn.classList.add('loading');
+            submitBtn.disabled = true;
+
+            const formData = new FormData(this);
+            const roleBtn = document.querySelector('.role-btn.active');
+            const selectedRole = roleBtn.id === 'teacher-role' ? 'teacher' : 'student';
+            formData.append('selected_role', selectedRole);
+
+            fetch('', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                }
+            }).then(response => {
+                if (!response.ok) throw new Error('Network response was not ok');
+                return response.json();
+            }).then(data => {
+                const message = document.getElementById('login-message');
+                message.classList.add('hidden');
+                if (data.success) {
+                    message.textContent = '✅ Login successful!';
+                    message.className = 'message success';
+                    setTimeout(() => {
+                        window.location.href = data.redirect || '/dashboard/';
+                    }, 1000);
+                } else {
+                    message.textContent = data.message || '❌ Invalid email, ID, password, or role.';
+                    message.className = 'message error';
+                }
+                message.classList.remove('hidden');
+                showMessageWithFade(message);
+                submitBtn.classList.remove('loading');
+                submitBtn.disabled = false;
+            }).catch(error => {
+                const message = document.getElementById('login-message');
+                message.classList.remove('hidden');
+                message.textContent = '❌ An unexpected error occurred. Please try again later.';
+                message.className = 'message error';
+                showMessageWithFade(message);
+                console.error('Fetch error:', error);
+                submitBtn.classList.remove('loading');
+                submitBtn.disabled = false;
+            });
+        });
+
+        document.getElementById('signup-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const submitBtn = this.querySelector('button[type="submit"]');
+            submitBtn.classList.add('loading');
+            submitBtn.disabled = true;
+
+            const formData = new FormData(this);
+            fetch('', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                }
+            }).then(response => {
+                if (!response.ok) throw new Error('Network response was not ok');
+                return response.json();
+            }).then(data => {
+                const message = document.getElementById('signup-message');
+                message.classList.add('hidden');
+                if (data.success) {
+                    message.textContent = data.message || '✅ Your teacher account request has been submitted. Await admin approval.';
+                    message.className = 'message success';
+                    setTimeout(() => {
+                        switchSection('login-tab', 'login-section');
+                    }, 2000);
+                } else {
+                    message.textContent = data.message || '❌ An error occurred during signup.';
+                    message.className = 'message error';
+                }
+                message.classList.remove('hidden');
+                showMessageWithFade(message);
+                submitBtn.classList.remove('loading');
+                submitBtn.disabled = false;
+            }).catch(error => {
+                const message = document.getElementById('signup-message');
+                message.classList.remove('hidden');
+                message.textContent = '❌ An unexpected error occurred. Please try again later.';
+                message.className = 'message error';
+                showMessageWithFade(message);
+                console.error('Fetch error:', error);
+                submitBtn.classList.remove('loading');
+                submitBtn.disabled = false;
+            });
+        });
+
+        document.getElementById('signup-form-student').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const submitBtn = this.querySelector('button[type="submit"]');
+            submitBtn.classList.add('loading');
+            submitBtn.disabled = true;
+
+            const formData = new FormData(this);
+            fetch('', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                }
+            }).then(response => {
+                if (!response.ok) throw new Error('Network response was not ok');
+                return response.json();
+            }).then(data => {
+                const message = document.getElementById('signup-message');
+                message.classList.add('hidden');
+                if (data.success) {
+                    message.textContent = data.message || '✅ Your student account has been created successfully! Redirecting to dashboard...';
+                    message.className = 'message success';
+                    setTimeout(() => {
+                        if (data.redirect) {
+                            window.location.href = data.redirect;
+                        } else {
+                            switchSection('login-tab', 'login-section');
+                        }
+                    }, 2000);
+                } else {
+                    message.textContent = data.message || '❌ An error occurred during signup.';
+                    message.className = 'message error';
+                }
+                message.classList.remove('hidden');
+                showMessageWithFade(message);
+                submitBtn.classList.remove('loading');
+                submitBtn.disabled = false;
+            }).catch(error => {
+                const message = document.getElementById('signup-message');
+                message.classList.remove('hidden');
+                message.textContent = '❌ An unexpected error occurred. Please try again later.';
+                message.className = 'message error';
+                showMessageWithFade(message);
+                console.error('Fetch error:', error);
+                submitBtn.classList.remove('loading');
+                submitBtn.disabled = false;
+            });
+        });
+
+        document.getElementById('verify-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const submitBtn = this.querySelector('button[type="submit"]');
+            submitBtn.classList.add('loading');
+            submitBtn.disabled = true;
+
+            const formData = new FormData(this);
+            fetch('', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                }
+            }).then(response => {
+                if (!response.ok) throw new Error('Network response was not ok');
+                return response.json();
+            }).then(data => {
+                const message = document.getElementById('forgot-message');
+                message.classList.add('hidden');
+                if (data.success) {
+                    document.getElementById('forgot-header-text').textContent = 'Step 2: Enter Verification Code';
+                    document.getElementById('verify-form').classList.add('hidden');
+                    document.getElementById('code-verification-form').classList.remove('hidden');
+                    message.textContent = data.message || `✅ Verification code sent to ${data.email}. Please check your inbox (and spam/junk folder).`;
+                    message.className = 'message success';
+                    verifiedEmail = data.email;
+                } else {
+                    message.textContent = data.message || '❌ An error occurred. Please try again.';
+                    message.className = 'message error';
+                }
+                message.classList.remove('hidden');
+                showMessageWithFade(message);
+                submitBtn.classList.remove('loading');
+                submitBtn.disabled = false;
+            }).catch(error => {
+                const message = document.getElementById('forgot-message');
+                message.classList.remove('hidden');
+                message.textContent = '❌ An unexpected error occurred. Please try again later.';
+                message.className = 'message error';
+                showMessageWithFade(message);
+                console.error('Fetch error:', error);
+                submitBtn.classList.remove('loading');
+                submitBtn.disabled = false;
+            });
+        });
+
+        document.getElementById('code-verification-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const submitBtn = this.querySelector('button[type="submit"]');
+            submitBtn.classList.add('loading');
+            submitBtn.disabled = true;
+
+            const formData = new FormData(this);
+            fetch('', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                }
+            }).then(response => {
+                if (!response.ok) throw new Error('Network response was not ok');
+                return response.json();
+            }).then(data => {
+                const message = document.getElementById('forgot-message');
+                message.classList.add('hidden');
+                if (data.success) {
+                    document.getElementById('forgot-header-text').textContent = 'Step 3: Enter New Password';
+                    document.getElementById('code-verification-form').classList.add('hidden');
+                    document.getElementById('reset-password-form').classList.remove('hidden');
+                    message.textContent = '✅ Code verified. Please set your new password below.';
+                    message.className = 'message success';
+                } else {
+                    message.textContent = data.message || '❌ Incorrect code. Please try again.';
+                    message.className = 'message error';
+                }
+                message.classList.remove('hidden');
+                showMessageWithFade(message);
+                submitBtn.classList.remove('loading');
+                submitBtn.disabled = false;
+            }).catch(error => {
+                const message = document.getElementById('forgot-message');
+                message.classList.remove('hidden');
+                message.textContent = '❌ An unexpected error occurred. Please try again later.';
+                message.className = 'message error';
+                showMessageWithFade(message);
+                console.error('Fetch error:', error);
+                submitBtn.classList.remove('loading');
+                submitBtn.disabled = false;
+            });
+        });
+
+        document.getElementById('reset-password-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const submitBtn = this.querySelector('button[type="submit"]');
+            submitBtn.classList.add('loading');
+            submitBtn.disabled = true;
+
+            const formData = new FormData(this);
+            fetch('', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                }
+            }).then(response => {
+                if (!response.ok) throw new Error('Network response was not ok');
+                return response.json();
+            }).then(data => {
+                const message = document.getElementById('forgot-message');
+                message.classList.add('hidden');
+                if (data.success) {
+                    message.textContent = '🎉 Your password has been successfully reset! You can now log in.';
+                    message.className = 'message success';
+                    setTimeout(() => {
+                        switchSection('login-tab', 'login-section');
+                    }, 2000);
+                } else {
+                    message.textContent = data.message || '❌ An error occurred. Please try again.';
+                    message.className = 'message error';
+                }
+                message.classList.remove('hidden');
+                showMessageWithFade(message);
+                submitBtn.classList.remove('loading');
+                submitBtn.disabled = false;
+            }).catch(error => {
+                const message = document.getElementById('forgot-message');
+                message.classList.remove('hidden');
+                message.textContent = '❌ An unexpected error occurred. Please try again later.';
+                message.className = 'message error';
+                showMessageWithFade(message);
+                console.error('Fetch error:', error);
+                submitBtn.classList.remove('loading');
+                submitBtn.disabled = false;
+            });
+        });
+
+        document.getElementById('resend-code-btn').addEventListener('click', function() {
+            const submitBtn = this;
+            submitBtn.classList.add('loading');
+            submitBtn.disabled = true;
+
+            const formData = new FormData();
+            formData.append('resend_code', 'true');
+            formData.append('verify-email', verifiedEmail);
+            fetch('', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                }
+            }).then(response => {
+                if (!response.ok) throw new Error('Network response was not ok');
+                return response.json();
+            }).then(data => {
+                const message = document.getElementById('forgot-message');
+                message.classList.add('hidden');
+                if (data.success) {
+                    message.textContent = data.message || `✅ Code resent to ${verifiedEmail}. Please check your inbox (and spam/junk folder).`;
+                    message.className = 'message success';
+                } else {
+                    message.textContent = data.message || '❌ Failed to resend code. Please try again.';
+                    message.className = 'message error';
+                }
+                message.classList.remove('hidden');
+                showMessageWithFade(message);
+                submitBtn.classList.remove('loading');
+                submitBtn.disabled = false;
+            }).catch(error => {
+                const message = document.getElementById('forgot-message');
+                message.classList.remove('hidden');
+                message.textContent = '❌ An unexpected error occurred. Please try again later.';
+                message.className = 'message error';
+                showMessageWithFade(message);
+                console.error('Fetch error:', error);
+                submitBtn.classList.remove('loading');
+                submitBtn.disabled = false;
+            });
+        });
+    </script>
+</body>
+</html>

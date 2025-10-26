@@ -1,0 +1,857 @@
+
+
+
+
+{% extends 'partials/base.html' %}
+{% block title %}Schedule{% endblock %}
+{% block content %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+<nav class="navbar">
+    <button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
+    <h1><i class="fas fa-calendar"></i> Schedule Manager</h1>
+    <ul>
+        <li><a href="{% url 'home' %}">Home</a></li>
+    </ul>
+</nav>
+
+<div class="main-content">
+    <div class="sidebar" id="sidebar">
+        <h3>Navigation</h3>
+        <ul>
+            <li><a href="{% url 'teacher_dashboard' if is_teacher else 'student_dashboard' %}"><i class="fas fa-home"></i> Home</a></li>
+        </ul>
+        
+        <h3>School</h3>
+        <ul>
+            {% if is_teacher %}
+                <li><a href="{% url 'schedule' %}"><i class="fas fa-calendar"></i> Schedule</a></li>
+                <li><a href="#"><i class="fas fa-users"></i> Students</a></li>
+            {% else %}
+                <li><a href="{% url 'schedule' %}"><i class="fas fa-calendar"></i> Class Schedule</a></li>
+                <li><a href="#"><i class="fas fa-user"></i> Profile</a></li>
+                <li><a href="#"><i class="fas fa-bell"></i> Notifications</a></li>
+                <li><a href="#"><i class="fas fa-chart-bar"></i> Summary</a></li>
+                <li><a href="#"><i class="fas fa-clock"></i> Today’s Status</a></li>
+                <li><a href="#"><i class="fas fa-list"></i> Attendance Log</a></li>
+                <li><a href="#"><i class="fas fa-qrcode"></i> My QR Code</a></li>
+            {% endif %}
+        </ul>
+        
+        {% if is_teacher %}
+            <h3>Management</h3>
+            <ul>
+                <li><a href="#"><i class="fas fa-check-circle"></i> Live Attendance</a></li>
+                <li><a href="#"><i class="fas fa-edit"></i> Manual Entry</a></li>
+                <li><a href="#"><i class="fas fa-search"></i> Search / Filter</a></li>
+            </ul>
+            
+            <h3>Reports</h3>
+            <ul>
+                <li><a href="#"><i class="fas fa-chart-line"></i> Analytics</a></li>
+                <li><a href="#"><i class="fas fa-eye"></i> Overview</a></li>
+                <li><a href="#"><i class="fas fa-file-alt"></i> Reports</a></li>
+                <li><a href="#"><i class="fas fa-list"></i> Scan Logs</a></li>
+            </ul>
+        {% endif %}
+    </div>
+    
+    <div class="content">
+        <div class="max-w-6xl mx-auto">
+            <header class="mb-6">
+                <h1 class="text-4xl font-extrabold text-indigo-700">Course Schedule Manager</h1>
+                <p class="text-gray-600 mt-2">Manage or view your academic schedule, with subjects, rooms, and attendance periods. Courses are separated by School Type.</p>
+                <div id="auth-status" class="mt-3 text-sm font-medium text-gray-500 bg-gray-100 p-2 rounded-lg shadow-sm">
+                    Loading user data...
+                </div>
+            </header>
+
+            <section class="mb-8 p-4 bg-white rounded-xl shadow-lg flex flex-col md:flex-row md:justify-between md:items-center">
+                <h2 class="text-xl font-bold text-indigo-800 mb-3 md:mb-0">Timetable View</h2>
+                <div id="school-type-selector" class="flex space-x-4">
+                    <label class="flex items-center space-x-2">
+                        <input type="radio" name="schoolType" value="HighSchool" id="type-highschool" class="form-radio text-indigo-600 h-4 w-4" {% if education_level in 'high_school,senior_high' %}checked{% endif %}>
+                        <span class="text-gray-700 font-medium">High School / Senior High</span>
+                    </label>
+                    <label class="flex items-center space-x-2">
+                        <input type="radio" name="schoolType" value="University" id="type-university" class="form-radio text-indigo-600 h-4 w-4" {% if education_level == 'university_college' %}checked{% endif %}>
+                        <span class="text-gray-700 font-medium">University / College</span>
+                    </label>
+                </div>
+            </section>
+            
+            <section id="controls" class="mb-6 flex justify-end">
+                <button id="add-course-btn" class="flex items-center space-x-2 px-4 py-2 bg-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-700 transition duration-150 shadow-lg shadow-indigo-200" {% if not is_teacher %}disabled{% endif %}>
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                    <span>Add New Course</span>
+                </button>
+            </section>
+
+            <section id="schedule-view" class="bg-white rounded-3xl shadow-2xl p-4 md:p-6 overflow-x-auto">
+                <h2 class="text-2xl font-bold mb-4 text-indigo-800">Weekly Timetable</h2>
+                <div id="loading-spinner" class="text-center py-12 text-gray-500 hidden">
+                    <svg class="animate-spin h-8 w-8 text-indigo-500 mx-auto mb-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Loading schedule...
+                </div>
+                <table id="schedule-table" class="min-w-full divide-y divide-indigo-200 border border-indigo-200 rounded-xl overflow-hidden">
+                    <thead class="bg-indigo-50">
+                        <tr>
+                            <th class="px-3 py-3 text-left text-xs font-bold text-indigo-600 uppercase tracking-wider w-20">Time</th>
+                            <th class="px-3 py-3 text-left text-xs font-bold text-indigo-600 uppercase tracking-wider">Monday</th>
+                            <th class="px-3 py-3 text-left text-xs font-bold text-indigo-600 uppercase tracking-wider">Tuesday</th>
+                            <th class="px-3 py-3 text-left text-xs font-bold text-indigo-600 uppercase tracking-wider">Wednesday</th>
+                            <th class="px-3 py-3 text-left text-xs font-bold text-indigo-600 uppercase tracking-wider">Thursday</th>
+                            <th class="px-3 py-3 text-left text-xs font-bold text-indigo-600 uppercase tracking-wider">Friday</th>
+                            <th class="px-3 py-3 text-left text-xs font-bold text-indigo-600 uppercase tracking-wider">Saturday</th>
+                            <th class="px-3 py-3 text-left text-xs font-bold text-indigo-600 uppercase tracking-wider">Sunday</th>
+                        </tr>
+                    </thead>
+                    <tbody id="schedule-body" class="bg-white divide-y divide-indigo-100">
+                        <!-- Schedule rows will be dynamically generated here -->
+                    </tbody>
+                </table>
+                <p id="no-classes-message" class="text-center text-gray-400 py-6 hidden">
+                    No classes scheduled yet. {% if is_teacher %}Click "Add New Course" to get started!{% else %}Contact your teacher for updates.{% endif %}
+                </p>
+            </section>
+        </div>
+    </div>
+</div>
+
+<div id="course-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 backdrop-blur-sm hidden z-50 transition-opacity duration-300">
+    <div class="flex items-center justify-center min-h-screen">
+        <div class="bg-white p-6 md:p-8 rounded-3xl shadow-2xl w-full max-w-lg m-4 transform transition-all duration-300 scale-95">
+            <h3 id="modal-title" class="text-2xl font-bold mb-6 text-indigo-700">Add New Course</h3>
+
+            <form id="course-form">
+                <input type="hidden" id="course-id">
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div class="md:col-span-2">
+                        <label for="course-name" class="block text-sm font-medium text-gray-700">Course Name</label>
+                        <input type="text" id="course-name" required class="mt-1 block w-full rounded-xl border-gray-300 shadow-sm p-3 border focus:border-indigo-500 focus:ring-indigo-500" {% if not is_teacher %}disabled{% endif %}>
+                    </div>
+                    <div>
+                        <label for="course-code" class="block text-sm font-medium text-gray-700">Course Code</label>
+                        <input type="text" id="course-code" required class="mt-1 block w-full rounded-xl border-gray-300 shadow-sm p-3 border focus:border-indigo-500 focus:ring-indigo-500" {% if not is_teacher %}disabled{% endif %}>
+                    </div>
+                    <div>
+                        <label for="room" class="block text-sm font-medium text-gray-700">Room / Location</label>
+                        <input type="text" id="room" required class="mt-1 block w-full rounded-xl border-gray-300 shadow-sm p-3 border focus:border-indigo-500 focus:ring-indigo-500" {% if not is_teacher %}disabled{% endif %}>
+                    </div>
+                    <div class="md:col-span-2">
+                        <label for="teacher-name" class="block text-sm font-medium text-gray-700">Teacher/Instructor Name</label>
+                        <input type="text" id="teacher-name" required class="mt-1 block w-full rounded-xl border-gray-300 shadow-sm p-3 border focus:border-indigo-500 focus:ring-indigo-500" {% if not is_teacher %}disabled{% endif %}>
+                    </div>
+                </div>
+
+                <h4 class="text-lg font-semibold mt-4 mb-3 text-indigo-600">Class Schedule Time</h4>
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                    <div>
+                        <label for="start-time" class="block text-sm font-medium text-gray-700">Class Start Time</label>
+                        <input type="time" id="start-time" required class="mt-1 block w-full rounded-xl border-gray-300 shadow-sm p-3 border focus:border-indigo-500 focus:ring-indigo-500" {% if not is_teacher %}disabled{% endif %}>
+                    </div>
+                    <div>
+                        <label for="end-time" class="block text-sm font-medium text-gray-700">Class End Time</label>
+                        <input type="time" id="end-time" required class="mt-1 block w-full rounded-xl border-gray-300 shadow-sm p-3 border focus:border-indigo-500 focus:ring-indigo-500" {% if not is_teacher %}disabled{% endif %}>
+                    </div>
+                </div>
+
+                <h4 class="text-lg font-semibold mt-4 mb-3 text-indigo-600">Attendance Window (Time In/Time End)</h4>
+                <p class="text-xs text-gray-500 mb-4">Attendance will automatically close at the assigned End Time.</p>
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                    <div>
+                        <label for="attendance-time-in" class="block text-sm font-medium text-gray-700">Attendance Time In</label>
+                        <input type="time" id="attendance-time-in" required class="mt-1 block w-full rounded-xl border-gray-300 shadow-sm p-3 border focus:border-indigo-500 focus:ring-indigo-500" {% if not is_teacher %}disabled{% endif %}>
+                    </div>
+                    <div>
+                        <label for="attendance-time-end" class="block text-sm font-medium text-gray-700">Attendance Time End (Auto-Close)</label>
+                        <input type="time" id="attendance-time-end" required class="mt-1 block w-full rounded-xl border-gray-300 shadow-sm p-3 border focus:border-indigo-500 focus:ring-indigo-500" {% if not is_teacher %}disabled{% endif %}>
+                    </div>
+                </div>
+
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Days of the Week</label>
+                    <div id="day-checkboxes" class="flex flex-wrap gap-2">
+                        <label class="day-label"><input type="checkbox" name="days" value="M" class="hidden" {% if not is_teacher %}disabled{% endif %}> <span class="checkbox-span">Mon</span></label>
+                        <label class="day-label"><input type="checkbox" name="days" value="T" class="hidden" {% if not is_teacher %}disabled{% endif %}> <span class="checkbox-span">Tue</span></label>
+                        <label class="day-label"><input type="checkbox" name="days" value="W" class="hidden" {% if not is_teacher %}disabled{% endif %}> <span class="checkbox-span">Wed</span></label>
+                        <label class="day-label"><input type="checkbox" name="days" value="Th" class="hidden" {% if not is_teacher %}disabled{% endif %}> <span class="checkbox-span">Thu</span></label>
+                        <label class="day-label"><input type="checkbox" name="days" value="F" class="hidden" {% if not is_teacher %}disabled{% endif %}> <span class="checkbox-span">Fri</span></label>
+                        <label class="day-label"><input type="checkbox" name="days" value="S" class="hidden" {% if not is_teacher %}disabled{% endif %}> <span class="checkbox-span">Sat</span></label>
+                        <label class="day-label"><input type="checkbox" name="days" value="Su" class="hidden" {% if not is_teacher %}disabled{% endif %}> <span class="checkbox-span">Sun</span></label>
+                    </div>
+                </div>
+
+                <h4 class="text-lg font-semibold mt-4 mb-3 text-indigo-600">Appearance</h4>
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Select Color Theme</label>
+                    <div id="color-selector" class="flex flex-wrap gap-3">
+                        <!-- Color options generated by JS -->
+                    </div>
+                    <input type="hidden" id="course-color" value="#3b82f6">
+                </div>
+
+                <h4 class="text-lg font-semibold mt-4 mb-3 text-indigo-600">Attendance Period</h4>
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                    <div>
+                        <label for="start-date" class="block text-sm font-medium text-gray-700">Semester Start Date</label>
+                        <input type="date" id="start-date" required class="mt-1 block w-full rounded-xl border-gray-300 shadow-sm p-3 border focus:border-indigo-500 focus:ring-indigo-500" {% if not is_teacher %}disabled{% endif %}>
+                    </div>
+                    <div>
+                        <label for="end-date" class="block text-sm font-medium text-gray-700">Semester End Date</label>
+                        <input type="date" id="end-date" required class="mt-1 block w-full rounded-xl border-gray-300 shadow-sm p-3 border focus:border-indigo-500 focus:ring-indigo-500" {% if not is_teacher %}disabled{% endif %}>
+                    </div>
+                </div>
+
+                <div class="flex justify-end space-x-3">
+                    <button type="button" id="delete-course-btn" class="hidden px-4 py-2 bg-red-500 text-white font-semibold rounded-xl hover:bg-red-600 transition duration-150" {% if not is_teacher %}disabled{% endif %}>
+                        Delete Course
+                    </button>
+                    <button type="button" id="cancel-modal-btn" class="px-4 py-2 text-gray-700 bg-gray-200 font-semibold rounded-xl hover:bg-gray-300 transition duration-150">
+                        Cancel
+                    </button>
+                    <button type="submit" class="px-6 py-2 bg-green-500 text-white font-semibold rounded-xl hover:bg-green-600 transition duration-150 shadow-md" {% if not is_teacher %}disabled{% endif %}>
+                        Save Course
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    const __firebase_config = JSON.stringify({
+        apiKey: "your-api-key",  // Replace with your Firebase API key
+        authDomain: "your-auth-domain",
+        projectId: "your-project-id",
+        storageBucket: "your-storage-bucket",
+        messagingSenderId: "your-messaging-sender-id",
+        appId: "your-app-id"
+    });
+    const __initial_auth_token = null; // Replace with actual token if available
+    const __app_id = "attendance-system";
+
+    const script = document.createElement('script');
+    script.type = 'module';
+    script.textContent = `
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection, query, where, addDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        let app;
+        let db;
+        let auth;
+        let userId = null;
+        let isAuthReady = false;
+        let currentSchoolType = '{{ initial_school_type }}';
+
+        const COLORS = [
+            { value: '#3b82f6', background: 'bg-blue-100', border: 'border-blue-300', text: 'text-blue-800', hover: 'hover:bg-blue-200', name: 'Blue' },
+            { value: '#10b981', background: 'bg-emerald-100', border: 'border-emerald-300', text: 'text-emerald-800', hover: 'hover:bg-emerald-200', name: 'Green' },
+            { value: '#f97316', background: 'bg-orange-100', border: 'border-orange-300', text: 'text-orange-800', hover: 'hover:bg-orange-200', name: 'Orange' },
+            { value: '#f43f5e', background: 'bg-rose-100', border: 'border-rose-300', text: 'text-rose-800', hover: 'hover:bg-rose-200', name: 'Red' },
+            { value: '#a855f7', background: 'bg-purple-100', border: 'border-purple-300', text: 'text-purple-800', hover: 'hover:bg-purple-200', name: 'Purple' },
+            { value: '#fbbf24', background: 'bg-amber-100', border: 'border-amber-300', text: 'text-amber-800', hover: 'hover:bg-amber-200', name: 'Yellow' },
+        ];
+        
+        function getColorClasses(hexValue) {
+            return COLORS.find(c => c.value === hexValue) || COLORS[0];
+        }
+
+        const scheduleBody = document.getElementById('schedule-body');
+        const modal = document.getElementById('course-modal');
+        const form = document.getElementById('course-form');
+        const modalTitle = document.getElementById('modal-title');
+        const courseIdInput = document.getElementById('course-id');
+        const deleteBtn = document.getElementById('delete-course-btn');
+        const loadingSpinner = document.getElementById('loading-spinner');
+        const noClassesMessage = document.getElementById('no-classes-message');
+        const colorInput = document.getElementById('course-color');
+        const colorSelectorDiv = document.getElementById('color-selector');
+        const schoolTypeSelectorDiv = document.getElementById('school-type-selector');
+        const dayCheckboxes = document.getElementById('day-checkboxes');
+
+        const CourseCRUD = {
+            COLLECTION_PATH: (uid) => \`/artifacts/\${__app_id}/users/\${uid}/courses\`,
+            SETTINGS_DOC_PATH: (uid) => \`/artifacts/\${__app_id}/users/\${uid}/settings/timetable\`,
+
+            async initFirebase() {
+                try {
+                    app = initializeApp(JSON.parse(__firebase_config));
+                    db = getFirestore(app);
+                    auth = getAuth(app);
+
+                    await new Promise((resolve, reject) => {
+                        const unsubscribe = onAuthStateChanged(auth, async (user) => {
+                            if (!user) {
+                                try {
+                                    if (__initial_auth_token) {
+                                        await signInWithCustomToken(auth, __initial_auth_token);
+                                    } else {
+                                        await signInAnonymously(auth);
+                                    }
+                                    userId = auth.currentUser?.uid || crypto.randomUUID();
+                                    isAuthReady = true;
+                                    document.getElementById('auth-status').innerHTML = \`
+                                        Status: Authenticated | User ID: <span class="text-indigo-600 font-mono">\${userId}</span>
+                                    \`;
+                                    resolve();
+                                } catch (authError) {
+                                    console.error("Authentication failed:", authError);
+                                    document.getElementById('auth-status').textContent = \`Authentication Error: \${authError.message}\`;
+                                    reject(authError);
+                                }
+                            } else {
+                                userId = user.uid;
+                                isAuthReady = true;
+                                document.getElementById('auth-status').innerHTML = \`
+                                    Status: Authenticated | User ID: <span class="text-indigo-600 font-mono">\${userId}</span>
+                                \`;
+                                resolve();
+                            }
+                            unsubscribe();
+                        });
+                    });
+                } catch (error) {
+                    console.error("Firebase initialization failed:", error);
+                    document.getElementById('auth-status').textContent = \`Initialization Error: \${error.message}\`;
+                }
+            },
+
+            async loadSettings() {
+                if (!db || !userId) return;
+                const settingsRef = doc(db, this.SETTINGS_DOC_PATH(userId));
+                try {
+                    const settingsSnap = await getDoc(settingsRef);
+                    if (settingsSnap.exists()) {
+                        const data = settingsSnap.data();
+                        currentSchoolType = data.schoolType || '{{ initial_school_type }}';
+                    }
+                } catch (e) {
+                    console.error("Error loading settings:", e);
+                    currentSchoolType = '{{ initial_school_type }}'; // Fallback
+                }
+                const radio = document.getElementById(\`type-\${currentSchoolType.toLowerCase()}\`);
+                if (radio) radio.checked = true;
+            },
+
+            async saveSettings(type) {
+                if (!db || !userId) return;
+                currentSchoolType = type;
+                const settingsRef = doc(db, this.SETTINGS_DOC_PATH(userId));
+                try {
+                    await setDoc(settingsRef, { schoolType: type }, { merge: true });
+                    console.log("School type setting saved:", type);
+                } catch (e) {
+                    console.error("Error saving settings:", e);
+                }
+            },
+
+            startListener() {
+                if (!db || !userId) {
+                    console.error("Database or User ID not available.");
+                    return;
+                }
+                const coursesRef = collection(db, this.COLLECTION_PATH(userId));
+                const q = query(coursesRef, where('schoolType', '==', currentSchoolType));
+                loadingSpinner.classList.remove('hidden');
+                onSnapshot(q, (snapshot) => {
+                    loadingSpinner.classList.add('hidden');
+                    const courses = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    this.renderSchedule(courses);
+                    noClassesMessage.classList.toggle('hidden', courses.length > 0);
+                }, (error) => {
+                    console.error("Error listening to courses:", error);
+                    loadingSpinner.classList.add('hidden');
+                    noClassesMessage.classList.remove('hidden');
+                    scheduleBody.innerHTML = '<tr><td colspan="8" class="px-3 py-2 text-center text-red-500">Failed to load schedule. Check console for details.</td></tr>';
+                });
+            },
+
+            async saveCourse(courseData, courseId) {
+                if (!db || !userId) return;
+                try {
+                    const coursesRef = collection(db, this.COLLECTION_PATH(userId));
+                    if (courseId) {
+                        const courseDocRef = doc(db, this.COLLECTION_PATH(userId), courseId);
+                        await setDoc(courseDocRef, courseData, { merge: true });
+                        console.log("Course updated with ID:", courseId);
+                    } else {
+                        await addDoc(coursesRef, courseData);
+                        console.log("New course added.");
+                    }
+                    Modal.hide();
+                } catch (e) {
+                    console.error("Error saving document: ", e);
+                    alert("Failed to save course. Check console for details.");
+                }
+            },
+
+            async deleteCourse(courseId) {
+                if (!db || !userId) return;
+                if (!window.confirm("Are you sure you want to delete this course? This action cannot be undone.")) return;
+                try {
+                    const courseDocRef = doc(db, this.COLLECTION_PATH(userId), courseId);
+                    await deleteDoc(courseDocRef);
+                    console.log("Course deleted:", courseId);
+                    Modal.hide();
+                } catch (e) {
+                    console.error("Error deleting document: ", e);
+                    alert("Failed to delete course. Check console for details.");
+                }
+            },
+
+            renderSchedule(courses) {
+                const timeSlots = generateTimeSlots(currentSchoolType);
+                const days = ["M", "T", "W", "Th", "F", "S", "Su"];
+                const scheduleMap = timeSlots.map(time => {
+                    const row = { time };
+                    days.forEach(day => row[day] = []);
+                    return row;
+                });
+                if (courses && courses.length > 0) {
+                    courses.forEach(course => {
+                        const startMin = timeToMinutes(course.startTime);
+                        const endMin = timeToMinutes(course.endTime);
+                        const alignedStartMin = timeToNearestSlotMinutes(course.startTime);
+                        const startIndex = timeSlots.findIndex(t => timeToMinutes(t) === alignedStartMin);
+                        if (startIndex === -1) return;
+                        const durationSlots = Math.ceil((endMin - startMin) / 30);
+                        (course.days || []).forEach(dayKey => {
+                            if (days.includes(dayKey)) {
+                                const courseData = { ...course, rowspan: durationSlots, isContinuation: false };
+                                if (startIndex < scheduleMap.length) scheduleMap[startIndex][dayKey].push(courseData);
+                                for (let i = 1; i < durationSlots; i++) {
+                                    const nextIndex = startIndex + i;
+                                    if (nextIndex < scheduleMap.length) scheduleMap[nextIndex][dayKey].push({ isContinuation: true });
+                                }
+                            }
+                        });
+                    });
+                }
+                let html = '';
+                scheduleMap.forEach(row => {
+                    const time = row.time;
+                    html += <tr class="hover:bg-indigo-50 transition duration-100">;
+                    html += <td class="px-3 py-2 text-sm font-semibold text-gray-800 border-r border-indigo-100">${formatTimeDisplay(time)}</td>;
+                    days.forEach(dayKey => {
+                        const cellContent = row[dayKey];
+                        if (cellContent.length === 0) {
+                            html += <td class="px-3 py-2 text-xs text-gray-400 border-r border-indigo-100"></td>;
+                        } else {
+                            const firstItem = cellContent[0];
+                            if (firstItem.isContinuation) return;
+                            const course = firstItem;
+                            const colorClasses = getColorClasses(course.color || COLORS[0].value);
+                            const startDisplay = formatDateDisplay(course.startDate);
+                            const endDisplay = formatDateDisplay(course.endDate);
+                            const onclickAction = {% if is_teacher %}'Modal.edit(\'' + course.id + '\')'{% else %}'alert(\'View only mode. Contact your teacher for changes.\')'{% endif %};
+                            html += \`
+                                <td rowspan="\${course.rowspan}" data-id="\${course.id}" 
+                                    class="p-2 cursor-pointer \${colorClasses.background} \${colorClasses.hover} transition duration-150 
+                                    rounded-xl border \${colorClasses.border} shadow-md relative group"
+                                    onclick="\${onclickAction}"
+                                >
+                                    <div class="font-bold text-sm \${colorClasses.text}">\${course.courseCode || 'N/A'} - \${course.courseName || 'N/A'}</div>
+                                    <div class="text-xs text-gray-700 font-medium">
+                                        <span class="font-semibold">Instructor:</span> \${course.teacherName || 'N/A'}
+                                    </div>
+                                    <div class="text-xs text-gray-700 mt-1">
+                                        \${formatTimeDisplay(course.startTime || '00:00')} - \${formatTimeDisplay(course.endTime || '00:00')} in \${course.room || 'N/A'}
+                                    </div>
+                                    <div class="text-xs text-gray-600 mt-2 border-t border-dashed border-gray-400 pt-1">
+                                        <span class="font-semibold">Attendance:</span> \${formatTimeDisplay(course.attendanceTimeIn || '00:00')} - \${formatTimeDisplay(course.attendanceTimeEnd || '00:00')}
+                                    </div>
+                                    <div class="text-xs text-gray-500 mt-1">
+                                        <span class="font-semibold">Period:</span> \${startDisplay || 'N/A'} to \${endDisplay || 'N/A'}
+                                    </div>
+                                </td>
+                            \`;
+                        }
+                    });
+                    html += </tr>   ;
+                });
+                scheduleBody.innerHTML = html;
+            }
+        };
+
+        function timeToMinutes(time) { 
+            const [h, m] = (time || '00:00').split(':').map(Number); 
+            return h * 60 + m; 
+        }
+        function timeToNearestSlotMinutes(time) { 
+            return Math.floor(timeToMinutes(time || '00:00') / 30) * 30; 
+        }
+        function formatTimeDisplay(time) { 
+            if (!time) return 'N/A'; 
+            const [h, m] = time.split(':').map(Number); 
+            const period = h >= 12 ? 'PM' : 'AM'; 
+            const hour = h % 12 || 12; 
+            return \`\${hour}:\${m.toString().padStart(2, '0')} \${period}\`; 
+        }
+        function formatDateDisplay(dateString) { 
+            if (!dateString) return 'N/A'; 
+            const date = new Date(dateString); 
+            return new Date(date.getTime() + date.getTimezoneOffset() * 60000).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }); 
+        }
+        function generateTimeSlots(type) { 
+            const slots = []; 
+            const settings = { 
+                University: { start: '05:30', end: '20:30' }, 
+                HighSchool: { start: '08:00', end: '18:00' } 
+            }[type] || { start: '08:00', end: '18:00' }; 
+            const startMin = timeToMinutes(settings.start); 
+            const endMin = timeToMinutes(settings.end); 
+            for (let m = startMin; m <= endMin; m += 30) { 
+                const h = Math.floor(m / 60); 
+                const min = m % 60; 
+                slots.push(\`\${h.toString().padStart(2, '0')}:\${min.toString().padStart(2, '0')}\`); 
+            } 
+            return slots; 
+        }
+
+        function renderColorSelector(defaultColor) {
+            colorSelectorDiv.innerHTML = COLORS.map(color => \`
+                <label class="cursor-pointer relative group p-1 rounded-full border-2 border-transparent hover:border-gray-400 transition">
+                    <input type="radio" name="color-select" value="\${color.value}" class="hidden" \${!{% if is_teacher %}true{% else %}false{% endif %} ? 'disabled' : ''}>
+                    <span title="\${color.name}" class="inline-block w-8 h-8 rounded-full border-4 border-white shadow-md transition-all duration-200"
+                          style="background-color: \${color.value};">
+                    </span>
+                    <div class="absolute inset-0 rounded-full ring-2 ring-transparent transition duration-200 pointer-events-none selected-ring"></div>
+                </label>
+            \`).join('');
+            const updateSelection = (value) => {
+                colorInput.value = value;
+                colorSelectorDiv.querySelectorAll('input[name="color-select"]').forEach(input => {
+                    const ring = input.closest('label').querySelector('.selected-ring');
+                    if (input.value === value) {
+                        input.checked = true;
+                        ring.classList.add('ring-indigo-500');
+                        ring.classList.remove('ring-transparent');
+                    } else {
+                        input.checked = false;
+                        ring.classList.remove('ring-indigo-500');
+                        ring.classList.add('ring-transparent');
+                    }
+                });
+            };
+            updateSelection(defaultColor || COLORS[0].value);
+            colorSelectorDiv.querySelectorAll('input[name="color-select"]').forEach(input => {
+                input.addEventListener('change', (e) => updateSelection(e.target.value));
+            });
+        }
+
+        const Modal = {
+            show: (isEdit = false, courseData = {}) => {
+                const isAdding = !isEdit;
+                modalTitle.textContent = isAdding ? 'Add New Course' : 'Edit Course Details';
+                deleteBtn.classList.toggle('hidden', isAdding);
+                form.reset();
+                courseIdInput.value = '';
+                const defaultColor = courseData.color || COLORS[0].value;
+                renderColorSelector(defaultColor);
+                if (isEdit) {
+                    courseIdInput.value = courseData.id || '';
+                    document.getElementById('course-name').value = courseData.courseName || '';
+                    document.getElementById('course-code').value = courseData.courseCode || '';
+                    document.getElementById('room').value = courseData.room || '';
+                    document.getElementById('teacher-name').value = courseData.teacherName || '';
+                    document.getElementById('attendance-time-in').value = courseData.attendanceTimeIn || '';
+                    document.getElementById('attendance-time-end').value = courseData.attendanceTimeEnd || '';
+                    document.getElementById('start-time').value = courseData.startTime || '';
+                    document.getElementById('end-time').value = courseData.endTime || '';
+                    document.getElementById('start-date').value = courseData.startDate || '';
+                    document.getElementById('end-date').value = courseData.endDate || '';
+                    colorInput.value = defaultColor;
+                    const dayCheckboxes = document.querySelectorAll('input[name="days"]');
+                    const selectedDays = courseData.days || [];
+                    dayCheckboxes.forEach(checkbox => {
+                        checkbox.checked = selectedDays.includes(checkbox.value);
+                        const span = checkbox.nextElementSibling;
+                        span.classList.toggle('bg-indigo-500', checkbox.checked);
+                        span.classList.toggle('text-white', checkbox.checked);
+                        span.classList.toggle('border-indigo-600', checkbox.checked);
+                    });
+                    deleteBtn.onclick = () => CourseCRUD.deleteCourse(courseData.id);
+                }
+                modal.classList.remove('hidden');
+            },
+            hide: () => modal.classList.add('hidden'),
+            async edit(courseId) {
+                if (!db || !userId || !{% if is_teacher %}true{% else %}false{% endif %}) return;
+                try {
+                    const coursesRef = collection(db, CourseCRUD.COLLECTION_PATH(userId));
+                    const docRef = doc(coursesRef, courseId);
+                    const snapshot = await getDoc(docRef);
+                    if (snapshot.exists()) Modal.show(true, { id: snapshot.id, ...snapshot.data() });
+                    else console.error("Course not found for editing:", courseId);
+                } catch (error) {
+                    console.error("Error fetching course for edit:", error);
+                }
+            }
+        };
+        window.Modal = Modal;
+
+        document.getElementById('add-course-btn').addEventListener('click', () => {% if is_teacher %}Modal.show(false){% else %}alert('View only mode. Contact your teacher to add courses.');{% endif %});
+        document.getElementById('cancel-modal-btn').addEventListener('click', Modal.hide);
+        modal.addEventListener('click', (e) => { if (e.target === modal) Modal.hide(); });
+
+        schoolTypeSelectorDiv.addEventListener('change', async (e) => {
+            if (e.target.name === 'schoolType') {
+                await CourseCRUD.saveSettings(e.target.value);
+                if (isAuthReady) CourseCRUD.startListener();
+            }
+        });
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const courseId = courseIdInput.value;
+            const selectedDays = Array.from(document.querySelectorAll('input[name="days"]:checked')).map(cb => cb.value);
+            if (selectedDays.length === 0) {
+                console.error("Validation failed: Please select at least one day for the class.");
+                return;
+            }
+            const courseData = {
+                courseName: document.getElementById('course-name').value.trim(),
+                courseCode: document.getElementById('course-code').value.trim(),
+                room: document.getElementById('room').value.trim(),
+                teacherName: document.getElementById('teacher-name').value.trim(),
+                attendanceTimeIn: document.getElementById('attendance-time-in').value,
+                attendanceTimeEnd: document.getElementById('attendance-time-end').value,
+                startTime: document.getElementById('start-time').value,
+                endTime: document.getElementById('end-time').value,
+                startDate: document.getElementById('start-date').value,
+                endDate: document.getElementById('end-date').value,
+                days: selectedDays,
+                color: colorInput.value,
+                userId: userId,
+                schoolType: currentSchoolType
+            };
+            await CourseCRUD.saveCourse(courseData, courseId || null);
+        });
+
+        dayCheckboxes.addEventListener('click', (e) => {
+            const checkbox = e.target.previousElementSibling;
+            if (checkbox && checkbox.type === 'checkbox') {
+                checkbox.checked = !checkbox.checked;
+                e.target.classList.toggle('bg-indigo-500', checkbox.checked);
+                e.target.classList.toggle('text-white', checkbox.checked);
+                e.target.classList.toggle('border-indigo-600', checkbox.checked);
+            }
+        });
+
+        window.onload = async () => {
+            try {
+                await CourseCRUD.initFirebase();
+                if (isAuthReady) {
+                    await CourseCRUD.loadSettings();
+                    CourseCRUD.startListener();
+                }
+            } catch (error) {
+                console.error("Failed to initialize schedule:", error);
+                document.getElementById('auth-status').textContent = \`Initialization Error: \${error.message}\`;
+                loadingSpinner.classList.add('hidden');
+                noClassesMessage.classList.remove('hidden');
+            }
+        };
+    `;
+    document.body.appendChild(script);
+
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        sidebar.classList.toggle('open');
+    }
+</script>
+
+<style>
+    body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        display: flex;
+        flex-direction: column;
+        background: linear-gradient(135deg, #f3e5f5 0%, #ffffff 100%);
+        animation: fadeIn 1s ease-in-out;
+        overflow-y: hidden;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    .navbar {
+        background: linear-gradient(90deg, #ffffff 0%, #f3e5f5 100%);
+        color: #7b1fa2;
+        padding: 10px 20px;
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        position: relative;
+        z-index: 1000;
+    }
+    .navbar h1 {
+        margin: 0;
+        font-size: 24px;
+        color: #7b1fa2;
+        transition: transform 0.3s ease;
+        display: flex;
+        align-items: center;
+    }
+    .navbar h1 i {
+        margin-right: 8px;
+    }
+    .navbar h1:hover {
+        transform: scale(1.05);
+    }
+    .navbar ul {
+        list-style-type: none;
+        margin: 0;
+        padding: 0;
+        display: flex;
+    }
+    .navbar li {
+        margin-left: 20px;
+    }
+    .navbar a {
+        color: #7b1fa2;
+        text-decoration: none;
+        padding: 8px 12px;
+        transition: all 0.3s ease;
+        border-radius: 5px;
+    }
+    .navbar a:hover {
+        background-color: #e1bee7;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+    .sidebar-toggle {
+        display: none;
+        background: none;
+        border: none;
+        color: #7b1fa2;
+        font-size: 24px;
+        cursor: pointer;
+        transition: transform 0.3s ease;
+    }
+    .sidebar-toggle:hover {
+        transform: rotate(90deg);
+    }
+    .main-content {
+        display: flex;
+        flex: 1;
+        overflow-y: hidden;
+    }
+    .sidebar {
+        height: calc(100vh - 60px);
+        width: 250px;
+        background: linear-gradient(180deg, #ffffff 0%, #f8f8f8 100%);
+        color: #7b1fa2;
+        padding: 20px;
+        padding-bottom: 40px;
+        box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+        overflow-y: auto;
+        scroll-behavior: smooth;
+        scroll-padding-bottom: 60px;
+        transition: transform 0.3s ease;
+    }
+    .sidebar h2 {
+        color: #7b1fa2;
+        margin-bottom: 10px;
+        font-size: 18px;
+        transition: color 0.3s ease;
+        display: flex;
+        align-items: center;
+    }
+    .sidebar h2 i {
+        margin-right: 8px;
+    }
+    .sidebar h2:hover {
+        color: #9c27b0;
+    }
+    .sidebar h3 {
+        color: #9c27b0;
+        margin-bottom: 5px;
+        font-size: 16px;
+    }
+    .sidebar ul {
+        list-style-type: none;
+        padding: 0;
+    }
+    .sidebar li {
+        margin-bottom: 8px;
+    }
+    .sidebar a {
+        color: #7b1fa2;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        padding: 5px 15px;
+        transition: all 0.3s ease;
+        border-radius: 3px;
+    }
+    .sidebar a i {
+        margin-right: 8px;
+    }
+    .sidebar a:hover {
+        background-color: #e1bee7;
+        padding-left: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .content {
+        flex: 1;
+        padding: 20px;
+        background-color: #fafafa;
+        overflow-y: auto;
+    }
+    @media (max-width: 768px) {
+        .navbar {
+            justify-content: space-between;
+        }
+        .navbar ul {
+            display: none;
+        }
+        .sidebar-toggle {
+            display: block;
+        }
+        .sidebar {
+            position: fixed;
+            left: -250px;
+            top: 60px;
+            height: calc(100vh - 60px);
+            z-index: 999;
+        }
+        .sidebar.open {
+            left: 0;
+        }
+        .content {
+            margin-left: 0;
+        }
+    }
+    @import url('https://fonts.fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+    body { font-family: 'Inter', sans-serif; }
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: #f0f4f8; }
+    ::-webkit-scrollbar-thumb { background: #818cf8; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #6366f1; }
+    .checkbox-span {
+        display: block;
+        padding: 8px 12px;
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-weight: 500;
+        color: #4b5563;
+        background-color: #f9fafb;
+    }
+    input[type="checkbox"]:checked + .checkbox-span {
+        background-color: #818cf8;
+        color: white;
+        border-color: #6366f1;
+        box-shadow: 0 4px 6px -1px rgba(129, 140, 248, 0.4);
+    }
+</style>
+{% endblock %}
