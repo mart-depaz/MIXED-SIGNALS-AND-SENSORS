@@ -1,7 +1,4 @@
-# for dashboard app views.py
-
-
-
+# dashboard/views.py
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from accounts.models import CustomUser  # Adjust import based on your user model
@@ -26,13 +23,16 @@ def schedule_view(request):
     
     # Determine school type based on education_level
     education_level = user.education_level
-    initial_school_type = 'University' if education_level == 'university_college' else 'HighSchool'
+    initial_school_type = 'HighSchool' if education_level == 'high_senior' else 'University'
     
     context = {
+        'user': user,
         'is_teacher': user.is_teacher,
         'education_level': education_level,
         'initial_school_type': initial_school_type,
     }
+    
+    # Use unified template for both teachers and students
     return render(request, 'dashboard/schedule.html', context)
 
 @login_required

@@ -1,7 +1,4 @@
-# for accounts app forms.py
-
-
-
+# accounts/forms.py
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from .models import CustomUser
@@ -13,8 +10,7 @@ class CustomUserCreationForm(UserCreationForm):
     full_name = forms.CharField(max_length=90, required=False, help_text="Enter your full name (e.g., John Michael Doe, or any part like John), optional")
     education_level = forms.ChoiceField(
         choices=[
-            ('high_school', 'High School'),
-            ('senior_high', 'Senior High'),
+            ('high_senior', 'High/Senior High'),
             ('university_college', 'University/College')
         ],
         required=True,
@@ -45,9 +41,9 @@ class CustomUserCreationForm(UserCreationForm):
             self.add_error(None, f'This ID is already registered by another user.')
         
         # Department is only required for University/College
-        if education_level in ['high_school', 'senior_high']:
+        if education_level in ['high_senior']:
             if 'department' in self.data and self.data['department']:
-                self.add_error('department', 'Department is not required for High School or Senior High.')
+                self.add_error('department', 'Department is not required for High/Senior High.')
         return cleaned_data
 
     def save(self, commit=True):

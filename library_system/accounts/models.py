@@ -1,8 +1,4 @@
-# for accounts app models.py
-
-
-
-
+# accounts/models.py
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
@@ -16,8 +12,7 @@ class CustomUser(AbstractUser):
     education_level = models.CharField(
         max_length=20,
         choices=[
-            ('high_school', 'High School'),
-            ('senior_high', 'Senior High'),
+            ('high_senior', 'High/Senior High'),
             ('university_college', 'University/College')
         ],
         blank=True,

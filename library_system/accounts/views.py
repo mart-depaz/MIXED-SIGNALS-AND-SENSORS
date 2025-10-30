@@ -1,7 +1,4 @@
-#for accounts app views.py
-
-
-
+# accounts/views.py
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
 from django.contrib import messages
@@ -49,10 +46,8 @@ def login_signup_view(request):
                     login(request, authenticated_user)
                     logger.info(f"Successful student login: {user.username}")
                     redirect_url = '/dashboard/student-dashboard/'
-                    if user.education_level == 'high_school':
+                    if user.education_level == 'high_senior':
                         redirect_url = '/dashboard/high-school-dashboard/'
-                    elif user.education_level == 'senior_high':
-                        redirect_url = '/dashboard/senior-high-dashboard/'
                     elif user.education_level == 'university_college':
                         redirect_url = '/dashboard/university-college-dashboard/'
                     return JsonResponse({'success': True, 'redirect': redirect_url})
@@ -61,10 +56,8 @@ def login_signup_view(request):
                         login(request, authenticated_user)
                         logger.info(f"Successful teacher login: {user.username}")
                         redirect_url = '/dashboard/teacher-dashboard/'
-                        if user.education_level == 'high_school':
+                        if user.education_level == 'high_senior':
                             redirect_url = '/dashboard/high-school-teacher-dashboard/'
-                        elif user.education_level == 'senior_high':
-                            redirect_url = '/dashboard/senior-high-teacher-dashboard/'
                         elif user.education_level == 'university_college':
                             redirect_url = '/dashboard/university-college-teacher-dashboard/'
                         return JsonResponse({'success': True, 'redirect': redirect_url})
@@ -105,10 +98,8 @@ def login_signup_view(request):
                         login(request, user)
                         logger.info(f"Successful student signup and login: {user.username}")
                         redirect_url = '/dashboard/student-dashboard/'
-                        if education_level == 'high_school':
+                        if education_level == 'high_senior':
                             redirect_url = '/dashboard/high-school-dashboard/'
-                        elif education_level == 'senior_high':
-                            redirect_url = '/dashboard/senior-high-dashboard/'
                         elif education_level == 'university_college':
                             redirect_url = '/dashboard/university-college-dashboard/'
                         return JsonResponse({
@@ -371,10 +362,8 @@ def approve_teacher(request, user_id):
             
             login(request, user)
             redirect_url = '/dashboard/teacher-dashboard/'
-            if user.education_level == 'high_school':
+            if user.education_level == 'high_senior':
                 redirect_url = '/dashboard/high-school-teacher-dashboard/'
-            elif user.education_level == 'senior_high':
-                redirect_url = '/dashboard/senior-high-teacher-dashboard/'
             elif user.education_level == 'university_college':
                 redirect_url = '/dashboard/university-college-teacher-dashboard/'
             return redirect(redirect_url)

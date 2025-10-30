@@ -1,6 +1,4 @@
-# for admin.py in accounts app
-
-
+# accounts/admin.py
 from django.contrib import admin
 from .models import CustomUser
 from django.urls import reverse
